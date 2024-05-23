@@ -1,6 +1,11 @@
 version: 0.2
 
 phases:
+  install:
+    commands:
+      - echo Installing Node 21 e npm...
+      - curl -fsSL https://rpm.nodesource.com/setup_21.x | sudo bash -
+      - sudo yum install -y nodejs
   pre_build:
     commands:
       - echo Fazendo login no ECR...
@@ -11,6 +16,10 @@ phases:
       - IMAGE_TAG=${COMMIT_HASH:=latest}
   build:
     commands:
+      - npm install --loglevel=error
+      - REACT_APP_API_URL=http://bia-alb-1484767191.us-east-1.elb.amazonaws.com SKIP_PREFLIGHT_CHECK=true npm run build --prefix client
+      - echo Rodando testes unitários
+      - npm test
       - echo Build iniciado `date`
       - echo Gerando imagem da BIA...
       - docker build -t $REPOSITORY_URI:latest .
